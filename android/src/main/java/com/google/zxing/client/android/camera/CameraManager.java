@@ -61,6 +61,10 @@ public final class CameraManager {
     this.configManager = new CameraConfigurationManager(context);
   }
 
+  public OpenCamera getOpenCamera() {
+    return openCamera;
+  }
+
   public void setPreviewCallback(Camera.PreviewCallback previewCallback) {
     this.previewCallback = previewCallback;
 

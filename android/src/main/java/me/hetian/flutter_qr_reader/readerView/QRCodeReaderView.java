@@ -23,6 +23,9 @@ import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -72,6 +75,8 @@ public class QRCodeReaderView extends SurfaceView
     private boolean mQrDecodingEnabled = true;
     private DecodeFrameTask decodeFrameTask;
     private Map<DecodeHintType, Object> decodeHints;
+    private ScaleGestureDetector mScaleDetector;
+    private float mZoom = 2;
 
     public QRCodeReaderView(Context context) {
         this(context, null);
@@ -83,7 +88,7 @@ public class QRCodeReaderView extends SurfaceView
         if (isInEditMode()) {
             return;
         }
-
+        mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         if (checkCameraHardware()) {
             mCameraManager = new CameraManager(getContext());
             mCameraManager.setPreviewCallback(this);
@@ -212,6 +217,12 @@ public class QRCodeReaderView extends SurfaceView
         }
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        mScaleDetector.onTouchEvent(event);
+        return super.dispatchTouchEvent(event);
+    }
+
     /****************************************************
      * SurfaceHolder.Callback,Camera.PreviewCallback
      ****************************************************/
@@ -230,6 +241,7 @@ public class QRCodeReaderView extends SurfaceView
 
         try {
             mQRCodeReader = new QRCodeReader();
+            mZoom = mCameraManager.getOpenCamera().getCamera().getParameters().getZoom();
             mCameraManager.startPreview();
         } catch (Exception e) {
             SimpleLog.e(TAG, "Exception: " + e.getMessage());
@@ -421,6 +433,33 @@ public class QRCodeReaderView extends SurfaceView
 
             return qrToViewPointTransformer.transform(resultPoints, isMirrorCamera, orientation,
                     viewSize, cameraPreviewSize);
+        }
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            Camera camera = mCameraManager.getOpenCamera().getCamera();
+            Camera.Parameters parameters = camera.getParameters();
+
+            mZoom = detector.getScaleFactor() * mZoom;
+            // Don't let the object get too small or too large.
+            if (mZoom > parameters.getMaxZoom()) {
+                mZoom = parameters.getMaxZoom();
+            } else if (mZoom < 10) {
+                mZoom = 10;
+            }
+            Log.i(TAG, String.valueOf(detector.getScaleFactor()));
+            Log.i(TAG, String.valueOf(mZoom));
+            if (mZoom < 10.1) {
+                parameters.setZoom(1);
+            } else {
+                parameters.setZoom(Math.round(mZoom));
+            }
+            mCameraManager.forceAutoFocus();
+            camera.setParameters(parameters);
+            invalidate();
+            return true;
         }
     }
 }

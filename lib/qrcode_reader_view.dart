@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'flutter_qr_reader.dart';
@@ -151,7 +152,9 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
               width: constraints.maxWidth,
               height: constraints.maxHeight,
               child: QrReaderView(
-                width: constraints.maxHeight * 9 / 16,
+                width: Platform.isIOS
+                    ? constraints.maxWidth
+                    : constraints.maxHeight * 9 / 16,
                 height: constraints.maxHeight,
                 callback: _onCreateController,
               ),

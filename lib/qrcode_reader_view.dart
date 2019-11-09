@@ -13,6 +13,7 @@ class QrcodeReaderView extends StatefulWidget {
   final double scanBoxRatio;
   final Color boxLineColor;
   final Widget helpWidget;
+  final bool showTools;
 
   QrcodeReaderView({
     Key key,
@@ -21,6 +22,7 @@ class QrcodeReaderView extends StatefulWidget {
     this.boxLineColor = Colors.cyanAccent,
     this.helpWidget,
     this.scanBoxRatio = 0.85,
+    this.showTools = true,
   }) : super(key: key);
 
   @override
@@ -210,35 +212,38 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
                 ),
               ),
             ),
-            Positioned(
-              width: constraints.maxWidth,
-              bottom: constraints.maxHeight == mediaQuery.size.height
-                  ? 12 + mediaQuery.padding.top
-                  : 12,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: _scanImage,
-                      child: Container(
-                        width: 45,
-                        height: 45,
-                        alignment: Alignment.center,
-                        child: Image.asset(
-                          "assets/tool_img.png",
-                          package: "flutter_qr_reader",
-                          width: 25,
-                          height: 25,
-                          color: Colors.white54,
+            Offstage(
+              offstage: !widget.showTools,
+              child: Positioned(
+                width: constraints.maxWidth,
+                bottom: constraints.maxHeight == mediaQuery.size.height
+                    ? 12 + mediaQuery.padding.top
+                    : 12,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: _scanImage,
+                        child: Container(
+                          width: 45,
+                          height: 45,
+                          alignment: Alignment.center,
+                          child: Image.asset(
+                            "assets/tool_img.png",
+                            package: "flutter_qr_reader",
+                            width: 25,
+                            height: 25,
+                            color: Colors.white54,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: 45, height: 45),
-                  ],
+                      SizedBox(width: 45, height: 45),
+                    ],
+                  ),
                 ),
               ),
             )
